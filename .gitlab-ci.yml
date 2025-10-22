@@ -1,0 +1,50 @@
+stages:
+  - build_helm_image
+  - build_and_deploy_charts
+
+variables:
+  CHARTS_DIR: "charts"
+  PACKAGE_PATH: "packages"
+
+build_helm_image:
+  stage: build_helm_image
+  image:
+    name: gcr.io/kaniko-project/executor:v1.9.0-debug
+    entrypoint: [""]
+  script:
+    - echo "{\"auths\":{\"https://index.docker.io/v1/\":{\"auth\":\"$(printf "%s:%s" "${DOCKER_USERNAME}" "${DOCKER_PASSWORD}" | base64 | tr -d '\n')\"}}}" > /kaniko/.docker/config.json
+    - /kaniko/executor
+      --context "${CI_PROJECT_DIR}"
+      --dockerfile "${CI_PROJECT_DIR}/helm-image/Dockerfile"
+      --destination "docker.io/rprilian/helm-image:latest"
+  only:
+    changes:
+      - helm-image/Dockerfile
+  tags:
+    - general
+
+
+build_and_deploy_charts:
+  stage: build_and_deploy_charts
+  image: docker.io/rprilian/helm-image:latest
+  script:
+    - mkdir -p ${PACKAGE_PATH}
+    - |
+      for dir in ${CHARTS_DIR}/*; do
+        if [ -d "$dir" ]; then
+          CHART_NAME=$(basename $dir)
+          helm package $dir --destination ${PACKAGE_PATH}
+        fi
+      done
+    - |
+      for chart in ${PACKAGE_PATH}/*.tgz; do
+        echo "Uploading $chart..."
+        if [ -f "$chart" ]; then
+          curl -k --request POST --form "chart=@$chart" --user gitlab-ci-token:$CI_JOB_TOKEN "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/helm/api/stable/charts"
+        fi
+        echo "Done"
+      done
+  only:
+    - main
+  tags:
+    - general
