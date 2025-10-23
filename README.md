@@ -94,6 +94,37 @@ helm pull oci://ghcr.io/makassar-superapp/eso-secrets --version 0.1.0
 
 ---
 
+### 4. [letsencrypt-tls-cert](./charts/letsencrypt-tls-cert)
+
+**Version:** 0.1.0 | **Type:** Application
+
+Deploys Let's Encrypt TLS certificates using cert-manager with optional issuer creation for public-facing services.
+
+**Key Features:**
+- Array-based certificate configuration
+- Support for both Issuer and ClusterIssuer
+- Optional issuer creation or use existing issuers
+- Multiple DNS names per certificate (SAN support)
+- ACME HTTP-01 and DNS-01 challenge support
+- Wildcard certificate support with DNS-01
+- Flexible certificate lifecycle management
+
+**Use Cases:**
+- Public-facing web applications
+- Wildcard certificates for multiple subdomains
+- Multi-domain certificates (SAN)
+- Automated Let's Encrypt certificate management
+- Staging and production environments
+
+**Quick Start:**
+```bash
+helm install web-certs charts/letsencrypt-tls-cert -f letsencrypt-values.yaml -n ingress
+```
+
+[📖 Full Documentation](./charts/letsencrypt-tls-cert/README.md)
+
+---
+
 ## Prerequisites
 
 ### Required Components
@@ -168,7 +199,7 @@ dependencies:
 Deploy a PostgreSQL database with TLS certificates and secrets management:
 
 ```bash
-# 1. Deploy TLS certificates
+# 1. Deploy TLS certificates (for internal database)
 helm install db-certs charts/database-tls-cert -f db-certs-values.yaml -n database
 
 # 2. Deploy secrets
@@ -178,7 +209,22 @@ helm install db-secrets charts/eso-secrets -f db-secrets-values.yaml -n database
 helm install postgres charts/cnpg-database -f postgres-values.yaml -n database
 ```
 
-### Pattern 2: Development Environment
+### Pattern 2: Public Web Application Stack
+
+Deploy a web application with Let's Encrypt certificates:
+
+```bash
+# 1. Deploy Let's Encrypt certificates for public domains
+helm install web-certs charts/letsencrypt-tls-cert -f web-certs-values.yaml -n ingress
+
+# 2. Deploy application secrets
+helm install app-secrets charts/eso-secrets -f app-secrets-values.yaml -n application
+
+# 3. Deploy your application with ingress using the certificates
+kubectl apply -f application-deployment.yaml -n application
+```
+
+### Pattern 3: Development Environment
 
 Quick setup for development with minimal security:
 
@@ -192,7 +238,7 @@ helm install dev-db charts/cnpg-database \
   -n development
 ```
 
-### Pattern 3: Production HA Setup
+### Pattern 4: Production HA Setup
 
 High-availability setup with backups and monitoring:
 
@@ -236,27 +282,33 @@ All charts follow [Semantic Versioning](https://semver.org/):
 dataproduct-starterkit/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml              # CI/CD pipeline
+│       └── ci.yml                  # CI/CD pipeline
 ├── charts/
-│   ├── cnpg-database/          # PostgreSQL database chart
+│   ├── cnpg-database/              # PostgreSQL database chart
 │   │   ├── templates/
 │   │   ├── Chart.yaml
 │   │   ├── values.yaml
 │   │   └── README.md
-│   ├── database-tls-cert/      # TLS certificate management
+│   ├── database-tls-cert/          # Database TLS certificate management
 │   │   ├── templates/
 │   │   ├── Chart.yaml
 │   │   ├── values.yaml
 │   │   └── README.md
-│   └── eso-secrets/            # Secrets management
+│   ├── eso-secrets/                # Secrets management
+│   │   ├── templates/
+│   │   ├── Chart.yaml
+│   │   ├── values.yaml
+│   │   └── README.md
+│   └── letsencrypt-tls-cert/       # Let's Encrypt certificates
 │       ├── templates/
 │       ├── Chart.yaml
 │       ├── values.yaml
+│       ├── values-example.yaml
 │       └── README.md
 ├── helm-image/
-│   └── Dockerfile              # Custom Helm image for CI/CD
+│   └── Dockerfile                  # Custom Helm image for CI/CD
 ├── LICENSE
-└── README.md                   # This file
+└── README.md                       # This file
 ```
 
 ## Adding New Charts
