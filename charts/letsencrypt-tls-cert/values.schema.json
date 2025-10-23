@@ -36,7 +36,8 @@
           "create": {
             "const": true
           }
-        }
+        },
+        "required": ["create"]
       },
       "then": {
         "required": ["email", "server"],
@@ -120,7 +121,8 @@
                 "create": {
                   "const": true
                 }
-              }
+              },
+              "required": ["create"]
             },
             "then": {
               "required": ["acme"]
