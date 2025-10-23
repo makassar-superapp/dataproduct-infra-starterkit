@@ -33,7 +33,7 @@ The charts are automatically published to GitHub Container Registry on every pus
 #### 1. Pull the chart
 
 ```bash
-helm pull oci://ghcr.io/rprilian/eso-secrets --version 0.1.0
+helm pull oci://ghcr.io/makassar-superapps/eso-secrets --version 0.1.0
 ```
 
 #### 2. Extract and customize
@@ -56,7 +56,7 @@ helm install my-secrets . -f my-values.yaml -n application-namespace --create-na
 #### 1. Clone the repository
 
 ```bash
-git clone https://github.com/rprilian/dataproduct-starterkit.git
+git clone https://github.com/makassar-superapps/dataproduct-starterkit.git
 cd dataproduct-starterkit/charts/eso-secrets
 ```
 
@@ -87,7 +87,7 @@ version: 0.1.0
 dependencies:
   - name: eso-secrets
     version: 0.1.0
-    repository: oci://ghcr.io/rprilian
+    repository: oci://ghcr.io/makassar-superapps
 ```
 
 Then in your `values.yaml`:
@@ -505,7 +505,7 @@ vault read auth/myapp-k8s-dev/role/myapp-dev
 ## Upgrading
 
 ```bash
-helm upgrade my-secrets oci://ghcr.io/rprilian/eso-secrets \
+helm upgrade my-secrets oci://ghcr.io/makassar-superapps/eso-secrets \
   --version 0.1.0 \
   -f my-values.yaml \
   -n application-namespace

@@ -19,18 +19,38 @@
           "enum": ["Issuer", "ClusterIssuer"]
         },
         "server": {
-          "type": "string",
-          "format": "uri"
+          "type": "string"
         },
         "email": {
-          "type": "string",
-          "format": "email"
+          "type": "string"
         },
         "privateKeySecretName": {
           "type": "string"
         },
         "solvers": {
           "type": "array"
+        }
+      },
+      "if": {
+        "properties": {
+          "create": {
+            "const": true
+          }
+        }
+      },
+      "then": {
+        "required": ["email", "server"],
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "minLength": 1
+          },
+          "server": {
+            "type": "string",
+            "format": "uri",
+            "minLength": 1
+          }
         }
       }
     },
@@ -74,14 +94,17 @@
               },
               "acme": {
                 "type": "object",
+                "required": ["email", "server"],
                 "properties": {
                   "server": {
                     "type": "string",
-                    "format": "uri"
+                    "format": "uri",
+                    "minLength": 1
                   },
                   "email": {
                     "type": "string",
-                    "format": "email"
+                    "format": "email",
+                    "minLength": 1
                   },
                   "privateKeySecretName": {
                     "type": "string"
@@ -91,6 +114,16 @@
                   }
                 }
               }
+            },
+            "if": {
+              "properties": {
+                "create": {
+                  "const": true
+                }
+              }
+            },
+            "then": {
+              "required": ["acme"]
             }
           },
           "duration": {
