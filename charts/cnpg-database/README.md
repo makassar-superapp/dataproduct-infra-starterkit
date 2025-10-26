@@ -13,6 +13,12 @@ This chart deploys production-ready PostgreSQL clusters using [CloudNativePG](ht
   - `recovery`: Restore from backups with Point-in-Time Recovery (PITR)
   - `pg_basebackup`: Clone from live PostgreSQL clusters
   
+- **Declarative Database Management**:
+  - Create and manage multiple databases declaratively
+  - Manage PostgreSQL extensions per database
+  - Manage schemas within databases
+  - Automatic reconciliation and status tracking
+  
 - **Backup & Recovery**:
   - Automated backups to S3, GCS, or volume snapshots
   - Point-in-Time Recovery (PITR) support
@@ -54,13 +60,13 @@ The charts are automatically published to GitHub Container Registry on every pus
 #### 1. Pull the chart
 
 ```bash
-helm pull oci://ghcr.io/makassar-superapp/cnpg-database --version 0.2.0
+helm pull oci://ghcr.io/makassar-superapp/cnpg-database --version 0.3.0
 ```
 
 #### 2. Extract the chart
 
 ```bash
-tar -xzf cnpg-database-0.2.0.tgz
+tar -xzf cnpg-database-0.3.0.tgz
 ```
 
 #### 3. Customize values
@@ -291,6 +297,60 @@ dbRoles:
     connectionLimit: 10
 ```
 
+### Declarative Database Management
+
+Create and manage multiple databases beyond the bootstrap database using CloudNativePG's Database CRD:
+
+```yaml
+databases:
+  - name: analytics  # Database name in PostgreSQL (required)
+    owner: app       # PostgreSQL role that owns the database (required)
+    ensure: present  # present or absent (default: present)
+    
+    # Optional: Manage extensions in the database
+    extensions:
+      - name: pg_stat_statements
+        ensure: present
+      - name: bloom
+        ensure: present
+        schema: public
+        version: "1.0"
+    
+    # Optional: Manage schemas in the database
+    schemas:
+      - name: analytics_schema
+        owner: app
+        ensure: present
+      - name: reporting
+        owner: dataops
+        ensure: present
+  
+  - name: reporting
+    owner: dataops
+    ensure: present
+    extensions:
+      - name: postgis
+        ensure: present
+      - name: postgis_topology
+        ensure: present
+```
+
+**Key Features:**
+
+- **Database Management**: Create multiple databases declaratively with automatic reconciliation
+- **Extension Management**: Install and manage PostgreSQL extensions per database with version control
+- **Schema Management**: Create and manage schemas within databases with ownership control
+- **Lifecycle Management**: Use `ensure: absent` to remove databases, extensions, or schemas
+
+**Important Notes:**
+
+- Reserved database names (`postgres`, `template0`, `template1`) cannot be used
+- The bootstrap database (default: `app`) is created automatically during cluster initialization
+- Database objects are reconciled by the CloudNativePG operator
+- Check the `status.applied` field to verify successful reconciliation
+
+For more details, see the [CloudNativePG Database Management Documentation](https://cloudnative-pg.io/documentation/current/declarative_database_management/).
+
 ### Custom pg_hba.conf
 
 Configure client authentication rules:
@@ -467,7 +527,7 @@ kubectl logs cluster-my-database-1 -n database-namespace
 
 ```bash
 helm upgrade my-database oci://ghcr.io/makassar-superapp/cnpg-database \
-  --version 0.2.0 \
+  --version 0.3.0 \
   -f my-values.yaml \
   -n database-namespace
 ```
@@ -545,6 +605,7 @@ For a complete list of all configurable parameters, see [values.yaml](./values.y
 Example values files:
 - [values-recovery-example.yaml](./values-recovery-example.yaml) - Recovery configuration
 - [values-pg-basebackup-example.yaml](./values-pg-basebackup-example.yaml) - Cloning configuration
+- [values-databases-example.yaml](./values-databases-example.yaml) - Declarative database management configuration
 
 ## Contributing
 
@@ -562,6 +623,6 @@ For issues and questions:
 
 ## Version
 
-- **Chart Version**: 0.2.0
+- **Chart Version**: 0.3.0
 - **PostgreSQL Version**: 16.2-3 (default)
 - **CloudNativePG Operator**: Compatible with v1.20+

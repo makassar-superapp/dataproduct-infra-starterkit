@@ -38,6 +38,32 @@ dbRoles:
     superuser: true
     disablePassword: true
 
+# Declarative Database Management
+# Create additional databases beyond the bootstrap database
+# Refer to: https://cloudnative-pg.io/documentation/current/declarative_database_management/
+databases: []
+  # - name: mydb  # Database name in PostgreSQL (required)
+  #   owner: app  # PostgreSQL role that owns the database (required)
+  #   ensure: present  # present or absent (default: present)
+  #   
+  #   # Optional: Manage extensions in the database
+  #   extensions:
+  #     - name: bloom
+  #       ensure: present  # present or absent (default: present)
+  #     - name: pg_stat_statements
+  #       ensure: present
+  #       schema: public  # Optional: schema to install the extension
+  #       version: "1.10"  # Optional: specific version
+  #   
+  #   # Optional: Manage schemas in the database
+  #   schemas:
+  #     - name: app
+  #       owner: app
+  #       ensure: present  # present or absent (default: present)
+  #     - name: analytics
+  #       owner: dataops
+  #       ensure: present
+
 bootstrapDB:
   database: app
   dbOwner: app

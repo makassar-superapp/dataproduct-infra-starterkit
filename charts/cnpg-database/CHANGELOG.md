@@ -2,6 +2,35 @@
 
 All notable changes to the cnpg-database Helm chart will be documented in this file.
 
+## [0.3.0] - 2024-10-26
+
+### Added
+- **Declarative Database Management**: Added support for creating and managing multiple databases declaratively using CloudNativePG's Database CRD
+  - Create multiple databases beyond the bootstrap database
+  - Manage PostgreSQL extensions per database with version control
+  - Manage schemas within databases with ownership control
+  - Support for `ensure: present/absent` lifecycle management
+  - Automatic reconciliation and status tracking by CloudNativePG operator
+  - New `databases.yaml` template for rendering Database resources
+  - Comprehensive documentation in README.md with examples
+  - Follows official CloudNativePG declarative database management specification
+
+### Changed
+- Updated chart description to include declarative database management support
+- Bumped chart version from 0.2.0 to 0.3.0 (minor version bump for new feature)
+- Enhanced README.md with dedicated section on declarative database management
+- Added inline documentation in `values.yaml` with detailed examples
+
+### Technical Details
+- Database resources are created with proper labels and cluster references
+- Supports all CloudNativePG Database CRD features:
+  - Required fields: `name`, `owner`, `cluster.name`
+  - Optional fields: `ensure`, `extensions`, `schemas`
+  - Extension properties: `name`, `ensure`, `version`, `schema`
+  - Schema properties: `name`, `owner`, `ensure`
+- Reserved database names (`postgres`, `template0`, `template1`) are documented as restricted
+- Database objects are reconciled independently from the cluster bootstrap process
+
 ## [0.2.0] - 2024-10-22
 
 ### Added
