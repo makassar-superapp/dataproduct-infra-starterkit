@@ -1,5 +1,7 @@
 # mysql-innodb-cluster
 
+**English** | [Bahasa Indonesia](./README.id.md)
+
 A Helm chart for deploying MySQL InnoDB Cluster using the MySQL Operator for Kubernetes with comprehensive clustering, high availability, and backup capabilities.
 
 ## Overview

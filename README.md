@@ -1,21 +1,24 @@
 # Data Product Infrastructure Starter Kit
 
-A collection of production-ready Helm charts for bootstrapping data product infrastructures on Kubernetes. This starter kit provides reusable templates and charts to quickly deploy and manage PostgreSQL databases, TLS certificates, and secrets management.
+**English** | [Bahasa Indonesia](./README.id.md)
+
+A collection of production-ready Helm charts for bootstrapping data product infrastructures on Kubernetes. This starter kit provides reusable templates and charts to quickly deploy and manage databases (PostgreSQL, MySQL), object storage (Ceph RGW), TLS certificates, and secrets management.
 
 ## Overview
 
-This repository contains Helm charts designed to work together to provide a complete infrastructure stack for data products. All charts are automatically packaged and published to GitHub Container Registry on every push to the main branch.
+This repository contains Helm charts designed to work together to provide a complete infrastructure stack for data products. All charts follow cloud-native best practices and are automatically packaged and published to GitHub Container Registry on every push to the main branch.
 
 ## Available Charts
 
 ### 1. [cnpg-database](./charts/cnpg-database)
 
-**Version:** 0.2.0 | **Type:** Application
+**Version:** 0.3.0 | **Type:** Application
 
 A comprehensive Helm chart for deploying CloudNativePG PostgreSQL clusters with enterprise-grade features.
 
 **Key Features:**
 - Multiple bootstrap methods (initdb, recovery, pg_basebackup)
+- Declarative database management with extensions and schemas
 - Automated backups to S3, GCS, or volume snapshots
 - Point-in-Time Recovery (PITR)
 - High availability with streaming replication
@@ -27,17 +30,82 @@ A comprehensive Helm chart for deploying CloudNativePG PostgreSQL clusters with 
 - Development and staging environments
 - Database cloning and testing
 - Disaster recovery scenarios
+- Multi-database applications
 
 **Quick Start:**
 ```bash
-helm pull oci://ghcr.io/makassar-superapp/cnpg-database --version 0.2.0
+helm pull oci://ghcr.io/makassar-superapp/cnpg-database --version 0.3.0
 ```
 
 [📖 Full Documentation](./charts/cnpg-database/README.md)
 
 ---
 
-### 2. [database-tls-cert](./charts/database-tls-cert)
+### 2. [mysql-innodb-cluster](./charts/mysql-innodb-cluster)
+
+**Version:** 0.2.0 | **Type:** Application
+
+A Helm chart for deploying MySQL InnoDB Cluster using the MySQL Operator for Kubernetes with comprehensive clustering, high availability, and backup capabilities.
+
+**Key Features:**
+- High availability InnoDB Cluster with Group Replication
+- MySQL Router for intelligent connection routing
+- Automated backups to PVC, S3, or OCI Object Storage
+- Scheduled backups using Kubernetes CronJobs
+- TLS/SSL encryption with Vault integration
+- Clone from existing MySQL instances
+- Restore from dumps
+- Configurable resource limits and quotas
+
+**Use Cases:**
+- Production MySQL databases with HA
+- Multi-instance MySQL clusters
+- Database cloning and migration
+- Automated backup and recovery
+- Secure MySQL deployments
+
+**Quick Start:**
+```bash
+cd charts/mysql-innodb-cluster
+helm install my-mysql . -f values.yaml -n mysql
+```
+
+[📖 Full Documentation](./charts/mysql-innodb-cluster/README.md)
+
+---
+
+### 3. [ceph-rgw-resources](./charts/ceph-rgw-resources)
+
+**Version:** 0.1.0 | **Type:** Application
+
+A simple Helm chart for declaratively managing Ceph RGW (RADOS Gateway) buckets and users using Rook.
+
+**Key Features:**
+- Declarative S3-compatible user management
+- Declarative S3-compatible bucket management
+- User quotas and capabilities configuration
+- Bucket policies and lifecycle rules
+- Automatic credential generation
+- Support for multiple users and buckets
+
+**Use Cases:**
+- S3-compatible object storage provisioning
+- Application bucket and user management
+- Automated credential management
+- Multi-tenant object storage
+- Backup storage provisioning
+
+**Quick Start:**
+```bash
+cd charts/ceph-rgw-resources
+helm install my-rgw . -f values.yaml -n rook-ceph
+```
+
+[📖 Full Documentation](./charts/ceph-rgw-resources/README.md)
+
+---
+
+### 4. [database-tls-cert](./charts/database-tls-cert)
 
 **Version:** 0.1.9 | **Type:** Application
 
@@ -66,7 +134,7 @@ helm pull oci://ghcr.io/makassar-superapp/database-tls-cert --version 0.1.9
 
 ---
 
-### 3. [eso-secrets](./charts/eso-secrets)
+### 5. [eso-secrets](./charts/eso-secrets)
 
 **Version:** 0.1.0 | **Type:** Application
 
@@ -94,7 +162,7 @@ helm pull oci://ghcr.io/makassar-superapp/eso-secrets --version 0.1.0
 
 ---
 
-### 4. [letsencrypt-tls-cert](./charts/letsencrypt-tls-cert)
+### 6. [letsencrypt-tls-cert](./charts/letsencrypt-tls-cert)
 
 **Version:** 0.1.0 | **Type:** Application
 
@@ -138,7 +206,9 @@ helm install web-certs charts/letsencrypt-tls-cert -f letsencrypt-values.yaml -n
 Depending on which charts you use, you may need:
 
 - **CloudNativePG Operator:** For cnpg-database chart ([Installation Guide](https://cloudnative-pg.io/documentation/current/installation_upgrade/))
-- **cert-manager:** For database-tls-cert chart ([Installation Guide](https://cert-manager.io/docs/installation/))
+- **MySQL Operator for Kubernetes:** For mysql-innodb-cluster chart ([Installation Guide](https://dev.mysql.com/doc/mysql-operator/en/mysql-operator-installation.html))
+- **Rook Ceph Operator:** For ceph-rgw-resources chart ([Installation Guide](https://rook.io/docs/rook/latest/Getting-Started/quickstart/))
+- **cert-manager:** For database-tls-cert and letsencrypt-tls-cert charts ([Installation Guide](https://cert-manager.io/docs/installation/))
 - **External Secrets Operator:** For eso-secrets chart ([Installation Guide](https://external-secrets.io/latest/introduction/getting-started/))
 
 ## Installation
@@ -282,33 +352,47 @@ All charts follow [Semantic Versioning](https://semver.org/):
 dataproduct-starterkit/
 ├── .github/
 │   └── workflows/
-│       └── ci.yml                  # CI/CD pipeline
+│       └── ci.yml                      # CI/CD pipeline
 ├── charts/
-│   ├── cnpg-database/              # PostgreSQL database chart
+│   ├── cnpg-database/                  # PostgreSQL database chart
+│   │   ├── templates/
+│   │   ├── Chart.yaml
+│   │   ├── values.yaml
+│   │   ├── values-databases-example.yaml
+│   │   └── README.md
+│   ├── mysql-innodb-cluster/           # MySQL InnoDB Cluster chart
+│   │   ├── templates/
+│   │   ├── Chart.yaml
+│   │   ├── values.yaml
+│   │   ├── values-production-ha.yaml
+│   │   ├── values-vault-tls-example.yaml
+│   │   └── README.md
+│   ├── ceph-rgw-resources/             # Ceph RGW buckets and users
+│   │   ├── templates/
+│   │   ├── Chart.yaml
+│   │   ├── values.yaml
+│   │   ├── values-example.yaml
+│   │   └── README.md
+│   ├── database-tls-cert/              # Database TLS certificate management
 │   │   ├── templates/
 │   │   ├── Chart.yaml
 │   │   ├── values.yaml
 │   │   └── README.md
-│   ├── database-tls-cert/          # Database TLS certificate management
+│   ├── eso-secrets/                    # Secrets management
 │   │   ├── templates/
 │   │   ├── Chart.yaml
 │   │   ├── values.yaml
 │   │   └── README.md
-│   ├── eso-secrets/                # Secrets management
-│   │   ├── templates/
-│   │   ├── Chart.yaml
-│   │   ├── values.yaml
-│   │   └── README.md
-│   └── letsencrypt-tls-cert/       # Let's Encrypt certificates
+│   └── letsencrypt-tls-cert/           # Let's Encrypt certificates
 │       ├── templates/
 │       ├── Chart.yaml
 │       ├── values.yaml
 │       ├── values-example.yaml
 │       └── README.md
 ├── helm-image/
-│   └── Dockerfile                  # Custom Helm image for CI/CD
+│   └── Dockerfile                      # Custom Helm image for CI/CD
 ├── LICENSE
-└── README.md                       # This file
+└── README.md                           # This file
 ```
 
 ## Adding New Charts
@@ -395,14 +479,23 @@ This project is licensed under the terms specified in the [LICENSE](./LICENSE) f
 
 ## Roadmap
 
-Future charts planned for this repository:
+### Completed
+
+- [x] **cnpg-database**: PostgreSQL with CloudNativePG (v0.3.0)
+- [x] **mysql-innodb-cluster**: MySQL InnoDB Cluster with HA (v0.2.0)
+- [x] **ceph-rgw-resources**: Ceph RGW buckets and users (v0.1.0)
+- [x] **database-tls-cert**: Database TLS certificates with Vault
+- [x] **eso-secrets**: External Secrets Operator integration
+- [x] **letsencrypt-tls-cert**: Let's Encrypt certificates
+
+### Planned
 
 - [ ] **monitoring-stack**: Prometheus, Grafana, and alerting
 - [ ] **backup-manager**: Centralized backup management
 - [ ] **data-pipeline**: Apache Airflow or similar
-- [ ] **object-storage**: MinIO or S3-compatible storage
 - [ ] **message-queue**: RabbitMQ or Kafka
 - [ ] **api-gateway**: Kong or similar
+- [ ] **redis-cluster**: Redis with high availability
 
 ---
 

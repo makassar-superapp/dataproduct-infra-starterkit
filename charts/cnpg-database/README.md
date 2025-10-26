@@ -1,5 +1,7 @@
 # cnpg-database
 
+**English** | [Bahasa Indonesia](./README.id.md)
+
 A Helm chart for deploying CloudNativePG PostgreSQL clusters with comprehensive backup, recovery, and cloning capabilities.
 
 ## Overview
